@@ -17,19 +17,9 @@ A JSFL automation script that reads a JSON file and builds an animated, flowing 
 
 ## Quick Start
 
-### 1. Update the JSON path
+### 1. Place your JSON file
 
-Open `buildFromJSON.jsfl` and set `CONFIG.jsonPath` to the absolute path of your `banner-data.json` using the `file:///` URI format:
-
-**Mac:**
-```
-jsonPath: "file:///Users/yourname/Desktop/jsfl-test/banner-data.json"
-```
-
-**Windows** (use `|` instead of `:` after the drive letter):
-```
-jsonPath: "file:///C|/Users/yourname/Desktop/jsfl-test/banner-data.json"
-```
+Put `banner-data.json` in the same folder as `buildFromJSON.jsfl`. The script automatically finds it using `fl.scriptURI` — no need to set an absolute path.
 
 ### 2. Edit your JSON
 
@@ -72,8 +62,8 @@ Vertical gap (in pixels) after each text block:
 
 ```js
 spacing: {
-    afterEyebrow: 8,
-    afterHeadline: 10,
+    afterEyebrow: 2,
+    afterHeadline: 2,
     afterSubhead: 20
 }
 ```
@@ -84,14 +74,16 @@ Each field has its own style block with font, size, weight, color, and spacing:
 
 ```js
 styles: {
-    eyebrow:  { font: "Arial", size: 14, style: "bold",   color: "#FFFFFF", letterSpacing: 2, lineSpacing: 2 },
-    headline: { font: "Arial", size: 36, style: "bold",   color: "#FFFFFF", letterSpacing: 0, lineSpacing: 4 },
-    subhead:  { font: "Arial", size: 14, style: "",       color: "#FFFFFF", letterSpacing: 0, lineSpacing: 4 },
-    cta:      { font: "Arial", size: 12, style: "bold",   color: "#FFFFFF", letterSpacing: 1, lineSpacing: 0 }
+    eyebrow:  { font: "Arial", size: 14, style: "",       color: "#FFFFFF", letterSpacing: 0, lineSpacing: 0 },
+    headline: { font: "Arial", size: 36, style: "bold",   color: "#FFFFFF", letterSpacing: -2, lineSpacing: -4 },
+    subhead:  { font: "Arial", size: 14, style: "",       color: "#FFFFFF", letterSpacing: 0, lineSpacing: 0 },
+    cta:      { font: "Arial", size: 12, style: "bold",   color: "#FFFFFF", letterSpacing: 0, lineSpacing: 0 }
 }
 ```
 
-The `style` field accepts `"bold"`, `"italic"`, `"boldItalic"`, or `""` for regular.
+- `style` accepts `"bold"`, `"italic"`, `"boldItalic"`, or `""` for regular
+- `lineSpacing` controls the gap between split lines within a text block. Supports negative values (e.g., `-8`) to tighten lines beyond the default text field padding
+- `letterSpacing` adjusts tracking between characters
 
 ### CTA Button
 
@@ -109,15 +101,35 @@ ctaButton: {
 
 ```js
 animation: {
-    tweenSeconds: 0.75,    // duration of each tween
-    staggerDelay: 6,       // frames between each element's start
-    holdFrames: 24,        // frames to hold after last animation
-    slideOffset: 200,      // pixels elements slide in from
-    easeStrength: -80      // negative = ease out
+    tweenSeconds: 0.75,          // duration of each tween
+    staggerDelay: 3,             // frames between each element's start
+    holdFrames: 24,              // frames to hold after last animation
+    slideEase: EASE.outCirc,     // ease curve for slide-in elements
+    fadeEase: EASE.outQuad       // ease curve for fade-in elements (CTA)
 }
 ```
 
-Text elements slide in from off-stage with a Circ Out ease curve. The CTA fades in with an alpha tween.
+Text elements slide in from off-stage with a configurable ease curve. The CTA fades in with an alpha tween using its own separate ease.
+
+## Easing Presets
+
+The script includes a full library of standard easing curves in the `EASE` object. Set `slideEase` or `fadeEase` in CONFIG to any of these:
+
+| Family | In | Out | InOut |
+|--------|----|-----|-------|
+| **Sine** | `EASE.inSine` | `EASE.outSine` | `EASE.inOutSine` |
+| **Quad** | `EASE.inQuad` | `EASE.outQuad` | `EASE.inOutQuad` |
+| **Cubic** | `EASE.inCubic` | `EASE.outCubic` | `EASE.inOutCubic` |
+| **Quart** | `EASE.inQuart` | `EASE.outQuart` | `EASE.inOutQuart` |
+| **Quint** | `EASE.inQuint` | `EASE.outQuint` | `EASE.inOutQuint` |
+| **Circ** | `EASE.inCirc` | `EASE.outCirc` | `EASE.inOutCirc` |
+| **Expo** | `EASE.inExpo` | `EASE.outExpo` | `EASE.inOutExpo` |
+| **Back** | `EASE.inBack` | `EASE.outBack` | `EASE.inOutBack` |
+| **Elastic** | `EASE.inElastic` | `EASE.outElastic` | `EASE.inOutElastic` |
+
+There's also `EASE.linear` for no easing.
+
+These are defined as cubic bezier control point arrays compatible with Animate's `setCustomEase()` API. The Elastic presets use multi-point curves to approximate the oscillation behavior. JSFL does not expose Animate's named ease presets, so custom control points are the only way to get specific curves.
 
 ## How It Works
 
@@ -133,10 +145,11 @@ Progress is logged to Animate's Output panel throughout.
 
 | Problem | Solution |
 |---------|----------|
-| "Could not read JSON file" | Verify `CONFIG.jsonPath` uses the `file:///` format and the path is correct |
+| "Could not read JSON file" | Make sure `banner-data.json` is in the same folder as `buildFromJSON.jsfl` |
 | Text looks unstyled | Font name must match exactly what Animate shows (e.g., `"Arial Black"` not `"ArialBlack"`) |
 | CTA bubble is offset | Adjust `paddingH` / `paddingV` values in `ctaButton` config |
 | Script does nothing | Make sure a document is open and you're on a valid layer/frame |
+| Lines too far apart | Use negative `lineSpacing` values (e.g., `-8`) to tighten line gaps |
 
 ## Requirements
 

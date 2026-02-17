@@ -6,13 +6,67 @@
 // ============================================================
 
 // -----------------------------------------------------------
+// EASING PRESETS — cubic bezier control points for setCustomEase()
+// Usage: set CONFIG.animation.slideEase / fadeEase to any of these.
+// Based on standard CSS/Robert Penner curves.
+// -----------------------------------------------------------
+var EASE = {
+	// Linear
+	linear:        [{x:0,y:0}, {x:0.25,y:0.25}, {x:0.75,y:0.75}, {x:1,y:1}],
+
+	// Sine
+	inSine:        [{x:0,y:0}, {x:0.47,y:0},    {x:0.745,y:0.715}, {x:1,y:1}],
+	outSine:       [{x:0,y:0}, {x:0.39,y:0.575}, {x:0.565,y:1},    {x:1,y:1}],
+	inOutSine:     [{x:0,y:0}, {x:0.445,y:0.05}, {x:0.55,y:0.95},  {x:1,y:1}],
+
+	// Quad
+	inQuad:        [{x:0,y:0}, {x:0.55,y:0.085}, {x:0.68,y:0.53},  {x:1,y:1}],
+	outQuad:       [{x:0,y:0}, {x:0.25,y:0.46},  {x:0.45,y:0.94},  {x:1,y:1}],
+	inOutQuad:     [{x:0,y:0}, {x:0.455,y:0.03}, {x:0.515,y:0.955},{x:1,y:1}],
+
+	// Cubic
+	inCubic:       [{x:0,y:0}, {x:0.55,y:0.055}, {x:0.675,y:0.19}, {x:1,y:1}],
+	outCubic:      [{x:0,y:0}, {x:0.215,y:0.61}, {x:0.355,y:1},    {x:1,y:1}],
+	inOutCubic:    [{x:0,y:0}, {x:0.645,y:0.045},{x:0.355,y:1},    {x:1,y:1}],
+
+	// Quart
+	inQuart:       [{x:0,y:0}, {x:0.895,y:0.03}, {x:0.685,y:0.22}, {x:1,y:1}],
+	outQuart:      [{x:0,y:0}, {x:0.165,y:0.84}, {x:0.44,y:1},     {x:1,y:1}],
+	inOutQuart:    [{x:0,y:0}, {x:0.77,y:0},     {x:0.175,y:1},    {x:1,y:1}],
+
+	// Quint
+	inQuint:       [{x:0,y:0}, {x:0.755,y:0.05}, {x:0.855,y:0.06}, {x:1,y:1}],
+	outQuint:      [{x:0,y:0}, {x:0.23,y:1},     {x:0.32,y:1},     {x:1,y:1}],
+	inOutQuint:    [{x:0,y:0}, {x:0.86,y:0},     {x:0.07,y:1},     {x:1,y:1}],
+
+	// Circ
+	inCirc:        [{x:0,y:0}, {x:0.6,y:0.04},   {x:0.98,y:0.335}, {x:1,y:1}],
+	outCirc:       [{x:0,y:0}, {x:0.075,y:0.82}, {x:0.165,y:1},    {x:1,y:1}],
+	inOutCirc:     [{x:0,y:0}, {x:0.785,y:0.135},{x:0.15,y:0.86},  {x:1,y:1}],
+
+	// Expo
+	inExpo:        [{x:0,y:0}, {x:0.95,y:0.05},  {x:0.795,y:0.035},{x:1,y:1}],
+	outExpo:       [{x:0,y:0}, {x:0.19,y:1},     {x:0.22,y:1},     {x:1,y:1}],
+	inOutExpo:     [{x:0,y:0}, {x:1,y:0},        {x:0,y:1},        {x:1,y:1}],
+
+	// Back (overshoot)
+	inBack:        [{x:0,y:0}, {x:0.6,y:-0.28},  {x:0.735,y:0.045},{x:1,y:1}],
+	outBack:       [{x:0,y:0}, {x:0.175,y:0.885},{x:0.32,y:1.275}, {x:1,y:1}],
+	inOutBack:     [{x:0,y:0}, {x:0.68,y:-0.55}, {x:0.265,y:1.55}, {x:1,y:1}],
+
+	// Elastic (multi-point approximations — overshoots and oscillates)
+	outElastic:    [{x:0,y:0}, {x:0.04,y:0.68}, {x:0.12,y:1.35}, {x:0.28,y:1.35}, {x:0.42,y:0.92}, {x:0.58,y:0.92}, {x:0.72,y:1.035}, {x:0.84,y:1.035}, {x:0.92,y:0.99}, {x:1,y:1}],
+	inElastic:     [{x:0,y:0}, {x:0.08,y:0.01}, {x:0.16,y:-0.035}, {x:0.28,y:-0.035}, {x:0.42,y:0.08}, {x:0.58,y:0.08}, {x:0.72,y:-0.35}, {x:0.88,y:-0.35}, {x:0.96,y:0.32}, {x:1,y:1}],
+	inOutElastic:  [{x:0,y:0}, {x:0.09,y:0}, {x:0.15,y:-0.16}, {x:0.24,y:-0.16}, {x:0.32,y:0.06}, {x:0.40,y:0.06}, {x:0.46,y:-0.3}, {x:0.54,y:1.3}, {x:0.60,y:0.94}, {x:0.68,y:0.94}, {x:0.76,y:1.16}, {x:0.85,y:1.16}, {x:0.91,y:1}, {x:1,y:1}]
+};
+
+
+// -----------------------------------------------------------
 // CONFIG — Adjust these to match your project
 // -----------------------------------------------------------
 var CONFIG = {
-	// Path to your JSON file (use file:/// URI format)
-	// On Mac:   "file:///Users/yourname/Desktop/banner-data.json"
-	// On Win:   "file:///C|/Users/yourname/Desktop/banner-data.json"
-	jsonPath: "file:///Users/aaronsterczewski/Desktop/jsfl-test/banner-data.json",
+	// JSON filename — resolved relative to this script's location
+	jsonFile: "banner-data.json",
 
 	// Layout area — where text blocks will be placed
 	layout: {
@@ -23,8 +77,8 @@ var CONFIG = {
 
 	// Vertical spacing between each text block
 	spacing: {
-		afterEyebrow: 8,
-		afterHeadline: 10,
+		afterEyebrow: 2,
+		afterHeadline: 2,
 		afterSubhead: 20
 	},
 
@@ -33,18 +87,18 @@ var CONFIG = {
 		eyebrow: {
 			font: "Arial",
 			size: 14,
-			style: "bold",       // "bold", "italic", "boldItalic", or "" for regular
+			style: "",       // "bold", "italic", "boldItalic", or "" for regular
 			color: "#FFFFFF",
-			letterSpacing: 2,
-			lineSpacing: 2
+			letterSpacing: 0,
+			lineSpacing: 0
 		},
 		headline: {
 			font: "Arial",
 			size: 36,
 			style: "bold",
 			color: "#FFFFFF",
-			letterSpacing: 0,
-			lineSpacing: 4
+			letterSpacing: -2,
+			lineSpacing: -4
 		},
 		subhead: {
 			font: "Arial",
@@ -52,14 +106,14 @@ var CONFIG = {
 			style: "",
 			color: "#FFFFFF",
 			letterSpacing: 0,
-			lineSpacing: 4
+			lineSpacing: 0
 		},
 		cta: {
 			font: "Arial",
 			size: 12,
 			style: "bold",
 			color: "#FFFFFF",
-			letterSpacing: 1,
+			letterSpacing: 0,
 			lineSpacing: 0
 		}
 	},
@@ -76,10 +130,10 @@ var CONFIG = {
 	// Animation settings
 	animation: {
 		tweenSeconds: 0.75,    // duration of each tween in seconds
-		staggerDelay: 6,      // frames between each element's animation start
-		holdFrames: 24,       // frames to hold after the last animation ends
-		slideOffset: 200,      // pixels elements slide in from (horizontal)
-		easeStrength: -80     // negative = ease out, positive = ease in
+		staggerDelay: 3,       // frames between each element's animation start
+		holdFrames: 24,        // frames to hold after the last animation ends
+		slideEase: EASE.outCirc,  // ease curve for slide-in elements
+		fadeEase: EASE.outQuad    // ease curve for fade-in elements (CTA)
 	}
 };
 
@@ -328,11 +382,15 @@ function createCTABubble(doc, x, y, w, h, fillColor, cornerRadius) {
 
 	// 1. READ THE JSON FILE
 	fl.trace("--- buildFromJSON: Starting ---");
-	fl.trace("Reading JSON from: " + CONFIG.jsonPath);
 
-	var jsonString = FLfile.read(CONFIG.jsonPath);
+	// Derive the script's folder from fl.scriptURI, then resolve the JSON file
+	var scriptDir = fl.scriptURI.substring(0, fl.scriptURI.lastIndexOf("/") + 1);
+	var jsonPath = scriptDir + CONFIG.jsonFile;
+	fl.trace("Reading JSON from: " + jsonPath);
+
+	var jsonString = FLfile.read(jsonPath);
 	if (!jsonString) {
-		alert("Could not read JSON file.\nCheck the path in CONFIG.jsonPath:\n" + CONFIG.jsonPath);
+		alert("Could not read JSON file.\nExpected at: " + jsonPath);
 		return;
 	}
 
@@ -573,22 +631,13 @@ function createCTABubble(doc, x, y, w, h, fillColor, cornerRadius) {
 				el.colorAlphaPercent = 0;
 			}
 
-			// Apply classic tween
+			// Apply classic tween with custom ease
 			layer.frames[sf].tweenType = "motion";
+			layer.frames[sf].hasCustomEase = true;
+			layer.frames[sf].useSingleEaseCurve = true;
 
-			if (ai.type === "slide") {
-				// Circ Out custom ease for directional motion
-				layer.frames[sf].hasCustomEase = true;
-				layer.frames[sf].useSingleEaseCurve = true;
-				layer.frames[sf].setCustomEase("all", [
-					{x: 0, y: 0},
-					{x: 0.08, y: 0.82},
-					{x: 0.17, y: 1},
-					{x: 1, y: 1}
-				]);
-			} else {
-				layer.frames[sf].tweenEasing = anim.easeStrength;
-			}
+			var easeCurve = (ai.type === "slide") ? anim.slideEase : anim.fadeEase;
+			layer.frames[sf].setCustomEase("all", easeCurve);
 		}
 	}
 
